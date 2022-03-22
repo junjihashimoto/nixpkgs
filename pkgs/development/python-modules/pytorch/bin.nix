@@ -29,7 +29,7 @@ in buildPythonPackage {
 
   format = "wheel";
 
-  disabled = !(isPy37 || isPy38 || isPy39 || (isPy310 && stdenv.isLinux));
+  disabled = !(isPy37 || isPy38 || isPy39 || isPy310);
 
   src = fetchurl srcs."${stdenv.system}-${pyVerNoDot}" or unsupported;
 
