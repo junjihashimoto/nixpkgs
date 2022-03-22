@@ -16,8 +16,10 @@ url_and_key_list=(
   "x86_64-darwin-37 $darwin_bucket/torch-${version}-cp37-none-macosx_10_9_x86_64.whl torch-${version}-cp37-none-macosx_10_9_x86_64.whl"
   "x86_64-darwin-38 $darwin_bucket/torch-${version}-cp38-none-macosx_10_9_x86_64.whl torch-${version}-cp38-none-macosx_10_9_x86_64.whl"
   "x86_64-darwin-39 $darwin_bucket/torch-${version}-cp39-none-macosx_10_9_x86_64.whl torch-${version}-cp39-none-macosx_10_9_x86_64.whl"
+  "x86_64-darwin-310 $darwin_bucket/torch-${version}-cp310-none-macosx_10_9_x86_64.whl torch-${version}-cp310-none-macosx_10_9_x86_64.whl"
   "aarch64-darwin-38 $darwin_bucket/torch-${version}-cp38-none-macosx_11_0_arm64.whl torch-${version}-cp38-none-macosx_11_0_arm64.whl"
   "aarch64-darwin-39 $darwin_bucket/torch-${version}-cp39-none-macosx_11_0_arm64.whl torch-${version}-cp39-none-macosx_11_0_arm64.whl"
+  "aarch64-darwin-310 $darwin_bucket/torch-${version}-cp310-none-macosx_11_0_arm64.whl torch-${version}-cp310-none-macosx_11_0_arm64.whl"
 )
 
 hashfile="binary-hashes-$version.nix"

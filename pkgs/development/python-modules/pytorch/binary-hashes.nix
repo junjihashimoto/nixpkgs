@@ -84,6 +84,11 @@ version : builtins.getAttr version {
       url = "https://download.pytorch.org/whl/cpu/torch-1.11.0-cp39-none-macosx_10_9_x86_64.whl";
       hash = "sha256-UP2b+FxXjIccKPHLCs6d/GAkQBx/OZsXT7DzcImfRFQ=";
     };
+    x86_64-darwin-310 = {
+      name = "torch-1.11.0-cp310-none-macosx_10_9_x86_64.whl";
+      url = "https://download.pytorch.org/whl/cpu/torch-1.11.0-cp39-none-macosx_10_9_x86_64.whl";
+      hash = "sha256-UP2b+FxXjIccKPHLCs6d/GAkQBx/OZsXT7DzcImfRFQ=";
+    };
     aarch64-darwin-38 = {
       name = "torch-1.11.0-cp38-none-macosx_11_0_arm64.whl";
       url = "https://download.pytorch.org/whl/cpu/torch-1.11.0-cp38-none-macosx_11_0_arm64.whl";
@@ -91,6 +96,11 @@ version : builtins.getAttr version {
     };
     aarch64-darwin-39 = {
       name = "torch-1.11.0-cp39-none-macosx_11_0_arm64.whl";
+      url = "https://download.pytorch.org/whl/cpu/torch-1.11.0-cp39-none-macosx_11_0_arm64.whl";
+      hash = "sha256-DkivZq11Xw+cXyZkAopBT1fEnWrcN+d+Bv4ABNpO22E=";
+    };
+    aarch64-darwin-310 = {
+      name = "torch-1.11.0-cp310-none-macosx_11_0_arm64.whl";
       url = "https://download.pytorch.org/whl/cpu/torch-1.11.0-cp39-none-macosx_11_0_arm64.whl";
       hash = "sha256-DkivZq11Xw+cXyZkAopBT1fEnWrcN+d+Bv4ABNpO22E=";
     };
