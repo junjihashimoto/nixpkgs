@@ -1,0 +1,24 @@
+diff --git a/requirements.txt b/requirements.txt
+index 6f1bab7..da836a7 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,5 +1,4 @@
+ torch>=1.7
+ coqpit
+ fsspec
+-tensorboardX
+-soundfile
+\ No newline at end of file
++soundfile
+diff --git a/trainer/logging/tensorboard_logger.py b/trainer/logging/tensorboard_logger.py
+index 805de87..e3fcb32 100644
+--- a/trainer/logging/tensorboard_logger.py
++++ b/trainer/logging/tensorboard_logger.py
+@@ -1,6 +1,6 @@
+ import traceback
+ 
+-from tensorboardX import SummaryWriter
++from torch.utils.tensorboard import SummaryWriter
+ 
+ from trainer.logging.base_dash_logger import BaseDashboardLogger
+ 

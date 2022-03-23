@@ -4,12 +4,11 @@
 
 , coqpit
 , fsspec
-, pytorch
+, pytorch-bin
 
 , pytestCheckHook
 , soundfile
-, tensorboardx
-, torchvision
+, torchvision-bin
 }:
 
 let
@@ -27,12 +26,13 @@ buildPythonPackage {
     hash = "sha256-NsgCh+N2qWmRkTOjXqisVCP5aInH2zcNz6lsnIfVLiY=";
   };
 
+  patches = [ ./conqui-trainer.patch ];
+
   propagatedBuildInputs = [
     coqpit
     fsspec
-    pytorch
+    pytorch-bin
     soundfile
-    tensorboardx
   ];
 
   # only one test and that requires training data from the internet
@@ -40,7 +40,7 @@ buildPythonPackage {
 
   checkInputs = [
     pytestCheckHook
-    torchvision
+    torchvision-bin
   ];
 
   pythonImportsCheck = [

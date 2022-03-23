@@ -41,6 +41,8 @@ python.pkgs.buildPythonApplication rec {
     sha256 = "sha256-YzMR/Tl1UvjdSqV/h4lYR6DuarEqEIM7RReqYznFU4Q=";
   };
 
+  patches = [ ./tts.patch ];
+
   postPatch = let
     relaxedConstraints = [
       "gruut"
@@ -84,7 +86,6 @@ python.pkgs.buildPythonApplication rec {
     pyworld
     scipy
     soundfile
-    tensorboardx
     tensorflow
     torchaudio-bin
     tqdm

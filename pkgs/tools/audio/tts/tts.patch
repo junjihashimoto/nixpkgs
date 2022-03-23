@@ -1,0 +1,12 @@
+diff --git a/requirements.txt b/requirements.txt
+index e3871874..3e3a881f 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -21,7 +21,6 @@ umap-learn==0.5.1
+ pandas
+ # deps for training
+ matplotlib
+-tensorboardX
+ pyworld
+ # coqui stack
+ coqui-trainer
