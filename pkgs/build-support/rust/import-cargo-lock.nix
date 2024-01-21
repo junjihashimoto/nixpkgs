@@ -204,7 +204,9 @@ let
         [source."${gitParts.url}${lib.optionalString (gitParts ? type) "?${gitParts.type}=${gitParts.value}"}"]
         git = "${gitParts.url}"
         ${lib.optionalString (gitParts ? type) "${gitParts.type} = \"${gitParts.value}\""}
-        replace-with = "vendored-sources"
+        replace-with = "vendored-sources-git-${gitParts.sha}"
+        [source.vendored-sources-git-${gitParts.sha}]
+        directory = "cargo-vendor-dir/git-${gitParts.sha}"
         EOF
       ''
       else throw "Cannot handle crate source: ${pkg.source}";
@@ -247,14 +249,25 @@ EOF
 
     for crate in ${toString depCrates}; do
       # Link the crate directory, removing the output path hash from the destination.
-      ln -s "$crate" $out/$(basename "$crate" | cut -c 34-)
-
+      # When the crate directory has a directory directive, putting it to git-* directory.
       if [ -e "$crate/.cargo-config" ]; then
         key=$(sed 's/\[source\."\(.*\)"\]/\1/; t; d' < "$crate/.cargo-config")
+        directory=$(sed 's/directory = "\(.*\)"/\1/; t; d' < "$crate/.cargo-config")
+        if [[ ! -z "$directory" ]]; then
+          gitdir=$(basename "$directory")
+          if [ ! -d $out/$gitdir ] ; then
+            mkdir $out/$gitdir
+          fi
+          ln -s "$crate" $out/$gitdir/$(basename "$crate" | cut -c 34-)
+        else
+          ln -s "$crate" $out/$(basename "$crate" | cut -c 34-)
+        fi
         if [[ -z ''${keysSeen[$key]} ]]; then
           keysSeen[$key]=1
           cat "$crate/.cargo-config" >> $out/.cargo/config
         fi
+      else
+        ln -s "$crate" $out/$(basename "$crate" | cut -c 34-)
       fi
     done
   '';
