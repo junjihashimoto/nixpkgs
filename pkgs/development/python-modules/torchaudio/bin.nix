@@ -17,7 +17,7 @@
 
 buildPythonPackage rec {
   pname = "torchaudio";
-  version = "2.2.2";
+  version = "2.3.0";
   format = "wheel";
 
   src =
@@ -27,7 +27,7 @@ buildPythonPackage rec {
     in
     fetchurl srcs;
 
-  disabled = (pythonOlder "3.8") || (pythonAtLeast "3.12");
+  disabled = (pythonOlder "3.8") || (pythonAtLeast "3.13");
 
   buildInputs = with cudaPackages; [
     # $out/${sitePackages}/torchaudio/lib/libtorchaudio*.so wants libcudart.so.11.0 but torch/lib only ships
@@ -72,7 +72,7 @@ buildPythonPackage rec {
     # https://www.intel.com/content/www/us/en/developer/articles/license/onemkl-license-faq.html
     license = licenses.bsd3;
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
-    platforms = [ "aarch64-linux" "x86_64-linux" "aarch64-darwin" "x86_64-darwin" ];
+    platforms = [ "aarch64-linux" "x86_64-linux" "aarch64-darwin" ];
     maintainers = with maintainers; [ junjihashimoto ];
   };
 }
