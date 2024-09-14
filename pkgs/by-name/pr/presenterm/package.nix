@@ -2,36 +2,47 @@
 , fetchFromGitHub
 , rustPlatform
 , libsixel
+, stdenv
+, nix-update-script
+, testers
+, presenterm
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "presenterm";
-  version = "0.4.1";
+  version = "0.8.0";
 
   src = fetchFromGitHub {
     owner = "mfontanini";
     repo = "presenterm";
     rev = "refs/tags/v${version}";
-    hash = "sha256-OHp/qbuaZ7uVydKGnSiBR5KQGdf8rWQQWRHrka+PI1M=";
+    hash = "sha256-sMhowTXPzZcIOV4Ny9NzvgXGsZSPBJGDg9JvuoZoSUc=";
   };
 
   buildInputs = [
     libsixel
   ];
 
-  cargoHash = "sha256-ymSTloz7sPAtMZN1uDgLs89gMcU+UTsMVc6y5UHt7no=";
+  cargoHash = "sha256-2aHJnGSuP0TEBMxF1zljbEyk1g6ECTpnByyH8jaj78s=";
 
-  buildFeatures = [ "sixel" ];
+  # Crashes at runtime on darwin with:
+  # Library not loaded: .../out/lib/libsixel.1.dylib
+  buildFeatures = lib.optionals (!stdenv.isDarwin) [ "sixel" ];
 
-  # Skip test that currently doesn't work
-  checkFlags = [ "--skip=execute::test::shell_code_execution" ];
+  passthru = {
+    updateScript = nix-update-script { };
+    tests.version = testers.testVersion {
+      package = presenterm;
+      command = "presenterm --version";
+    };
+  };
 
-  meta = with lib; {
-    description = "A terminal based slideshow tool";
+  meta = {
+    description = "Terminal based slideshow tool";
     changelog = "https://github.com/mfontanini/presenterm/releases/tag/v${version}";
     homepage = "https://github.com/mfontanini/presenterm";
-    license = licenses.bsd2;
-    maintainers = with maintainers; [ mikaelfangel ];
+    license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ mikaelfangel ];
     mainProgram = "presenterm";
   };
 }

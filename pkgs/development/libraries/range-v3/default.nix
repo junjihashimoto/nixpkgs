@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchFromGitHub, fetchpatch, cmake }:
+{ lib, stdenv, fetchFromGitHub, cmake }:
 
 stdenv.mkDerivation rec {
   pname = "range-v3";
@@ -21,12 +21,16 @@ stdenv.mkDerivation rec {
   doCheck = !stdenv.isAarch64;
   checkTarget = "test";
 
+  env = lib.optionalAttrs stdenv.cc.isGNU {
+    NIX_CFLAGS_COMPILE = "-std=c++17";
+  };
+
   meta = with lib; {
     description = "Experimental range library for C++11/14/17";
     homepage = "https://github.com/ericniebler/range-v3";
     changelog = "https://github.com/ericniebler/range-v3/releases/tag/${version}";
     license = licenses.boost;
     platforms = platforms.all;
-    maintainers = with maintainers; [ ];
+    maintainers = [ ];
   };
 }

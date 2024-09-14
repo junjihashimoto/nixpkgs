@@ -3,16 +3,16 @@
 
 buildGoModule rec {
   pname = "discordo";
-  version = "unstable-2023-12-12";
+  version = "0-unstable-2024-07-02";
 
   src = fetchFromGitHub {
     owner = "ayn2op";
     repo = pname;
-    rev = "320ec7753d552974d4d5ede3fcf6fb3c0d52b6e4";
-    hash = "sha256-LVWOXw8+GbCE6N6kVSXDjjNqOcq7PS4KU7LXoowhBdQ=";
+    rev = "31905f3e790e63cd0f2366526afe41fb278c226e";
+    hash = "sha256-IhGZGHV/A1m653WlVCwxtb9OZbMolQ3GHOr2fXehjNk=";
   };
 
-  vendorHash = "sha256-8qr1erKGyJvR4LDKHkZf7nR0tQOcvUHQyJt7OlqNS44=";
+  vendorHash = "sha256-5ZsvoIDwxZCGkMRxlCyp2Iv6fcvvpmzG+krz3MZSiTM=";
 
   CGO_ENABLED = 0;
 
@@ -31,7 +31,7 @@ buildGoModule rec {
   };
 
   meta = with lib; {
-    description = "A lightweight, secure, and feature-rich Discord terminal client";
+    description = "Lightweight, secure, and feature-rich Discord terminal client";
     homepage = "https://github.com/ayn2op/discordo";
     license = licenses.mit;
     maintainers = [ maintainers.arian-d ];

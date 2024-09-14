@@ -26,15 +26,15 @@
 
 stdenv.mkDerivation rec {
   pname = "nextcloud-client";
-  version = "3.11.0";
+  version = "3.13.3";
 
   outputs = [ "out" "dev" ];
 
   src = fetchFromGitHub {
-    owner = "nextcloud";
+    owner = "nextcloud-releases";
     repo = "desktop";
     rev = "v${version}";
-    hash = "sha256-rqSnCIsXQDf3cNQn4ofjGQkCgwYGyDau/WWUPHziNp4=";
+    hash = "sha256-Z2/WllEiz/Yj/GyIczfA4L2+3Hr8Jmo7X2W/hP1PmwI=";
   };
 
   patches = [
@@ -85,7 +85,7 @@ stdenv.mkDerivation rec {
   cmakeFlags = [
     "-DBUILD_UPDATER=off"
     "-DCMAKE_INSTALL_LIBDIR=lib" # expected to be prefix-relative by build code setting RPATH
-    "-DNO_SHIBBOLETH=1" # allows to compile without qtwebkit
+    "-DMIRALL_VERSION_SUFFIX=" # remove git suffix from version
   ];
 
   postBuild = ''

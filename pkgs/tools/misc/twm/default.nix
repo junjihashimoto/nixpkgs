@@ -5,30 +5,44 @@
 , openssl
 , pkg-config
 , Security
+, nix-update-script
+, installShellFiles
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "twm";
-  version = "0.8.1";
+  version = "0.10.2";
 
   src = fetchFromGitHub {
     owner = "vinnymeller";
-    repo = pname;
-    rev = "v${version}";
-    sha256 = "sha256-4+1+9SdaYxqFmXB3F1vEfVq8bGiR6s8bVLrnjQNf/DY=";
+    repo = "twm";
+    rev = "refs/tags/v${version}";
+    hash = "sha256-qOOEeaxae7nYbvNzl3BEZkdjO69lgtGrrLS5Q7akN9U=";
   };
 
-  cargoHash = "sha256-5F3jjNv1oJeYoGEuu2IC/7yiWWigVvxsjmHKcs1mESE=";
+  cargoHash = "sha256-gJ5go9V8c97pQZICUD1ksLJhOyJXyVXAWssH3fhrRVQ=";
 
-  nativeBuildInputs = [ pkg-config ];
+  nativeBuildInputs = [ pkg-config installShellFiles ];
   buildInputs = [ openssl ] ++ lib.optionals stdenv.isDarwin [ Security ];
 
-  meta = with lib; {
-    description = "A customizable workspace manager for tmux";
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd twm \
+      --bash <($out/bin/twm --print-bash-completion) \
+      --zsh <($out/bin/twm --print-zsh-completion) \
+      --fish <($out/bin/twm --print-fish-completion)
+
+    $out/bin/twm --print-man > twm.1
+    installManPage twm.1
+  '';
+
+  passthru.updateScript = nix-update-script { };
+
+  meta = {
+    description = "Customizable workspace manager for tmux";
     homepage = "https://github.com/vinnymeller/twm";
-    changelog = "https://github.com/vinnymeller/twm/releases/tag/v${version}";
-    license = licenses.gpl2Only;
-    maintainers = with maintainers; [ vinnymeller ];
+    changelog = "https://github.com/vinnymeller/twm/releases/tag/${lib.removePrefix "refs/tags/" src.rev}";
+    license = lib.licenses.mit;
+    maintainers =  [ lib.maintainers.vinnymeller ];
     mainProgram = "twm";
   };
 }

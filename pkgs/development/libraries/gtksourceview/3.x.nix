@@ -35,6 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [ ./3.x-nix_share_path.patch ];
 
+  env = lib.optionalAttrs stdenv.cc.isGNU {
+    NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+  };
+
   enableParallelBuilding = true;
 
   doCheck = stdenv.isLinux;
@@ -49,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = with lib; {
-    homepage = "https://wiki.gnome.org/Projects/GtkSourceView";
+    homepage = "https://gitlab.gnome.org/GNOME/gtksourceview";
     pkgConfigModules = [ "gtksourceview-3.0" ];
     platforms = with platforms; linux ++ darwin;
     license = licenses.lgpl21;

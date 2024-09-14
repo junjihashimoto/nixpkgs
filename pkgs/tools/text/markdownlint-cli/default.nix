@@ -5,16 +5,16 @@
 
 buildNpmPackage rec {
   pname = "markdownlint-cli";
-  version = "0.38.0";
+  version = "0.41.0";
 
   src = fetchFromGitHub {
     owner = "igorshubovych";
     repo = "markdownlint-cli";
     rev = "v${version}";
-    hash = "sha256-3PiienQjyJQ/ElY4j0Ccu+r6KtIu1kuPlobHqXE0GY4=";
+    hash = "sha256-qRbfOxMCm5pUAi0KHookOOnKaTShBUkTkrqZX4QGezk=";
   };
 
-  npmDepsHash = "sha256-WoXyWn58E4+Lj3LWqr/8JbvAo5IcjLgnzhIt59bSqV4=";
+  npmDepsHash = "sha256-UwyjaEKYA81J0DR2yFqYVp4e7l3Jol/R8hgaijNpBaU=";
 
   dontNpmBuild = true;
 

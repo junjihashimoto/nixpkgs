@@ -24,7 +24,7 @@ let
   vivaldiName = if isSnapshot then "vivaldi-snapshot" else "vivaldi";
 in stdenv.mkDerivation rec {
   pname = "vivaldi";
-  version = "6.5.3206.39";
+  version = "6.9.3447.41";
 
   suffix = {
     aarch64-linux = "arm64";
@@ -34,8 +34,8 @@ in stdenv.mkDerivation rec {
   src = fetchurl {
     url = "https://downloads.vivaldi.com/${branch}/vivaldi-${branch}_${version}-1_${suffix}.deb";
     hash = {
-      aarch64-linux = "sha256-7f3JRkkBGF+7EFGbzosUcKUUFswmKhpacbcd0AaY8fw=";
-      x86_64-linux = "sha256-louqE7Icf8qEiegzoVd/1jzA+wLFTrQyN3V8g64uQT8=";
+      aarch64-linux = "sha256-Up2n7G3vatsQC9JKF1A1jAIBbdWm9UhL/75AXuxDCsg=";
+      x86_64-linux = "sha256-Hcd8W8bDlRUT/zPYP+aiJnUmepS38KuK0wRFYB3uW1Y=";
     }.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
@@ -124,10 +124,11 @@ in stdenv.mkDerivation rec {
   passthru.updateScript = ./update-vivaldi.sh;
 
   meta = with lib; {
-    description = "A Browser for our Friends, powerful and personal";
+    description = "Browser for our Friends, powerful and personal";
     homepage    = "https://vivaldi.com";
     license     = licenses.unfree;
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+    mainProgram = "vivaldi";
     maintainers = with maintainers; [ otwieracz badmutex ];
     platforms   = [ "x86_64-linux" "aarch64-linux" ];
   };

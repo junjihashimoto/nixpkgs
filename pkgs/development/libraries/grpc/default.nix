@@ -21,7 +21,7 @@
 
 stdenv.mkDerivation rec {
   pname = "grpc";
-  version = "1.60.0"; # N.B: if you change this, please update:
+  version = "1.66.1"; # N.B: if you change this, please update:
     # pythonPackages.grpcio-tools
     # pythonPackages.grpcio-status
 
@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
     owner = "grpc";
     repo = "grpc";
     rev = "v${version}";
-    hash = "sha256-0mn+nQAgaurd1WomzcLUAYwp88l26qGkP+cP1SSYxsE=";
+    hash = "sha256-CmQUUbIYPWRS7q7OX+TmkTvoqtJAUEwhL/lev8JdB8U=";
     fetchSubmodules = true;
   };
 
@@ -40,7 +40,8 @@ stdenv.mkDerivation rec {
       url = "https://github.com/lopsided98/grpc/commit/a9b917666234f5665c347123d699055d8c2537b2.patch";
       hash = "sha256-Lm0GQsz/UjBbXXEE14lT0dcRzVmCKycrlrdBJj+KLu8=";
     })
-  ];
+    # fix build of 1.63.0 and newer on darwin: https://github.com/grpc/grpc/issues/36654
+  ] ++ (lib.optional stdenv.hostPlatform.isDarwin ./dynamic-lookup-darwin.patch);
 
   nativeBuildInputs = [ cmake pkg-config ]
     ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) grpc;
@@ -96,7 +97,7 @@ stdenv.mkDerivation rec {
     "-Wno-elaborated-enum-base"
   ]);
 
-  enableParallelBuilds = true;
+  enableParallelBuilding = true;
 
   passthru.tests = {
     inherit (python3.pkgs) grpcio-status grpcio-tools jaxlib;
@@ -104,9 +105,9 @@ stdenv.mkDerivation rec {
   };
 
   meta = with lib; {
-    description = "The C based gRPC (C++, Python, Ruby, Objective-C, PHP, C#)";
+    description = "C based gRPC (C++, Python, Ruby, Objective-C, PHP, C#)";
     license = licenses.asl20;
-    maintainers = with maintainers; [ lnl7 marsam ];
+    maintainers = with maintainers; [ lnl7 ];
     homepage = "https://grpc.io/";
     platforms = platforms.all;
     changelog = "https://github.com/grpc/grpc/releases/tag/v${version}";

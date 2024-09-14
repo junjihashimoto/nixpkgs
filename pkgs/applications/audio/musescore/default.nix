@@ -19,15 +19,16 @@
 , portmidi
 , qtbase
 , qtdeclarative
-, qtgraphicaleffects
 , flac
-, qtquickcontrols
-, qtquickcontrols2
-, qtscript
+, libopusenc
+, libopus
+, tinyxml-2
+, qt5compat
+, qtwayland
 , qtsvg
-, qtxmlpatterns
+, qtscxml
 , qtnetworkauth
-, qtx11extras
+, qttools
 , nixosTests
 , darwin
 }:
@@ -48,27 +49,36 @@ let
   } else portaudio;
 in stdenv'.mkDerivation (finalAttrs: {
   pname = "musescore";
-  version = "4.2.0";
+  version = "4.4.1";
 
   src = fetchFromGitHub {
     owner = "musescore";
     repo = "MuseScore";
     rev = "v${finalAttrs.version}";
-    sha256 = "sha256-vNA1VPCHLt5kuhIix8kgeq1VlbuIX1lOY3nJaufvuyc=";
+    sha256 = "sha256-eLtpLgXSc8L5y1Mg3s1wrxr09+/vBxNqJEtl9IoKYSM=";
   };
+  patches = [
+    # https://github.com/musescore/MuseScore/pull/24326
+    (fetchpatch {
+      name = "fix-menubar-with-qt6.5+.patch";
+      url = "https://github.com/musescore/MuseScore/pull/24326/commits/b274f13311ad0b2bce339634a006ba22fbd3379e.patch";
+      hash = "sha256-ZGmjRa01CBEIxJdJYQMhdg4A9yjWdlgn0pCPmENBTq0=";
+    })
+  ];
 
   cmakeFlags = [
-    "-DMUSESCORE_BUILD_MODE=release"
+    "-DMUSE_APP_BUILD_MODE=release"
     # Disable the build and usage of the `/bin/crashpad_handler` utility - it's
     # not useful on NixOS, see:
     # https://github.com/musescore/MuseScore/issues/15571
-    "-DMUE_BUILD_CRASHPAD_CLIENT=OFF"
-    # Use our freetype
+    "-DMUSE_MODULE_DIAGNOSTICS_CRASHPAD_CLIENT=OFF"
+    # Use our versions of system libraries
     "-DMUE_COMPILE_USE_SYSTEM_FREETYPE=ON"
-    # From some reason, in $src/build/cmake/SetupBuildEnvironment.cmake,
-    # upstream defaults to compiling to x86_64 only, unless this cmake flag is
-    # set
-    "-DMUE_COMPILE_BUILD_MACOS_APPLE_SILICON=ON"
+    "-DMUE_COMPILE_USE_SYSTEM_HARFBUZZ=ON"
+    "-DMUE_COMPILE_USE_SYSTEM_TINYXML=ON"
+    # Implies also -DMUE_COMPILE_USE_SYSTEM_OPUS=ON
+    "-DMUE_COMPILE_USE_SYSTEM_OPUSENC=ON"
+    "-DMUE_COMPILE_USE_SYSTEM_FLAC=ON"
     # Don't bundle qt qml files, relevant really only for darwin, but we set
     # this for all platforms anyway.
     "-DMUE_COMPILE_INSTALL_QTQML_FILES=OFF"
@@ -85,14 +95,10 @@ in stdenv'.mkDerivation (finalAttrs: {
     "--set-default QT_QPA_PLATFORM xcb"
   ];
 
-  # HACK `propagatedSandboxProfile` does not appear to actually propagate the
-  # sandbox profile from `qtbase`, see:
-  # https://github.com/NixOS/nixpkgs/issues/237458
-  sandboxProfile = toString qtbase.__propagatedSandboxProfile or null;
-
   nativeBuildInputs = [
     wrapQtAppsHook
     cmake
+    qttools
     pkg-config
     ninja
   ];
@@ -108,18 +114,20 @@ in stdenv'.mkDerivation (finalAttrs: {
     portaudio'
     portmidi
     flac
+    libopusenc
+    libopus
+    tinyxml-2
     qtbase
     qtdeclarative
-    qtgraphicaleffects
-    qtquickcontrols
-    qtquickcontrols2
-    qtscript
+    qt5compat
     qtsvg
-    qtxmlpatterns
+    qtscxml
     qtnetworkauth
-    qtx11extras
   ] ++ lib.optionals stdenv.isLinux [
     alsa-lib
+    qtwayland
+  ] ++ lib.optionals stdenv.isDarwin [
+    darwin.apple_sdk_11_0.frameworks.Cocoa
   ];
 
   postInstall = ''
@@ -129,7 +137,7 @@ in stdenv'.mkDerivation (finalAttrs: {
     mkdir -p "$out/Applications"
     mv "$out/mscore.app" "$out/Applications/mscore.app"
     mkdir -p $out/bin
-    ln -s $out/Applications/mscore.app/Contents/MacOS/mscore $out/bin/mscore.
+    ln -s $out/Applications/mscore.app/Contents/MacOS/mscore $out/bin/mscore
   '';
 
   # Don't run bundled upstreams tests, as they require a running X window system.
@@ -142,9 +150,7 @@ in stdenv'.mkDerivation (finalAttrs: {
     homepage = "https://musescore.org/";
     license = licenses.gpl3Only;
     maintainers = with maintainers; [ vandenoever doronbehar ];
-    # on aarch64-linux:
-    # error: cannot convert '<brace-enclosed initializer list>' to 'float32x4_t' in assignment
-    broken = (stdenv.isLinux && stdenv.isAarch64);
     mainProgram = "mscore";
+    platforms = platforms.unix;
   };
 })

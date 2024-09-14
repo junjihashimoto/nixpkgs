@@ -3,14 +3,10 @@
 , fetchFromGitHub
 , glibc
 , zlib
-, libX11
-, libICE
-, libSM
-, fontconfig
 , gtk3
 , copyDesktopItems
 , icoutils
-, wrapGAppsHook
+, wrapGAppsHook3
 , makeDesktopItem
 }:
 
@@ -32,10 +28,6 @@ buildDotnetModule rec {
   runtimeDeps = [
     glibc
     zlib
-    libX11
-    libICE
-    libSM
-    fontconfig
     gtk3
   ];
 
@@ -46,7 +38,7 @@ buildDotnetModule rec {
   nativeBuildInputs = [
     copyDesktopItems
     icoutils
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   postFixup = ''

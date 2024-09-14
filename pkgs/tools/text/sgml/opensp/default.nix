@@ -50,13 +50,17 @@ stdenv.mkDerivation rec {
   ++ lib.optional stdenv.cc.isClang autoreconfHook
   ++ lib.optionals stdenv.isCygwin [ autoconf automake libtool ];
 
+  env = lib.optionalAttrs stdenv.cc.isGNU {
+    NIX_CFLAGS_COMPILE = "-fpermissive";
+  };
+
   doCheck = false; # fails
 
   meta = with lib; {
-    description = "A suite of SGML/XML processing tools";
+    description = "Suite of SGML/XML processing tools";
     license = licenses.mit;
     homepage = "https://openjade.sourceforge.net/";
     platforms = platforms.unix;
-    maintainers = with maintainers; [ ];
+    maintainers = [ ];
   };
 }

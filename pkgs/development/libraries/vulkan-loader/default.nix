@@ -1,15 +1,16 @@
 { lib, stdenv, fetchFromGitHub, cmake, pkg-config, libX11, libxcb
-, libXrandr, wayland, moltenvk, vulkan-headers, addOpenGLRunpath }:
+, libXrandr, wayland, moltenvk, vulkan-headers, addDriverRunpath
+, testers }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "vulkan-loader";
-  version = "1.3.268.0";
+  version = "1.3.290.0";
 
   src = fetchFromGitHub {
     owner = "KhronosGroup";
     repo = "Vulkan-Loader";
-    rev = "vulkan-sdk-${version}";
-    hash = "sha256-TDn8eVz1fhGfvUiGcxqOk2BN9tuIF5+ssIXtOo3weS0=";
+    rev = "vulkan-sdk-${finalAttrs.version}";
+    hash = "sha256-z26xvp7bKaOQAXF+/Sk24Syuw3N9QXc6sk2vlQwceJ8=";
   };
 
   patches = [ ./fix-pkgconfig.patch ];
@@ -20,7 +21,7 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [ "-DCMAKE_INSTALL_INCLUDEDIR=${vulkan-headers}/include" ]
     ++ lib.optional stdenv.isDarwin "-DSYSCONFDIR=${moltenvk}/share"
-    ++ lib.optional stdenv.isLinux "-DSYSCONFDIR=${addOpenGLRunpath.driverLink}/share"
+    ++ lib.optional stdenv.isLinux "-DSYSCONFDIR=${addDriverRunpath.driverLink}/share"
     ++ lib.optional (stdenv.buildPlatform != stdenv.hostPlatform) "-DUSE_GAS=OFF";
 
   outputs = [ "out" "dev" ];
@@ -34,12 +35,19 @@ stdenv.mkDerivation rec {
     }
   '';
 
+  passthru = {
+    tests.pkg-config = testers.hasPkgConfigModules {
+      package = finalAttrs.finalPackage;
+    };
+  };
+
   meta = with lib; {
     description = "LunarG Vulkan loader";
     homepage    = "https://www.lunarg.com";
     platforms   = platforms.unix ++ platforms.windows;
     license     = licenses.asl20;
     maintainers = [ maintainers.ralith ];
-    broken = (version != vulkan-headers.version);
+    broken = finalAttrs.version != vulkan-headers.version;
+    pkgConfigModules = [ "vulkan" ];
   };
-}
+})

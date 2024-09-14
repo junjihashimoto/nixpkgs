@@ -10,16 +10,16 @@
 
 buildGoModule rec {
   pname = "thanos";
-  version = "0.32.5";
+  version = "0.36.1";
 
   src = fetchFromGitHub {
     owner = "thanos-io";
     repo = "thanos";
     rev = "refs/tags/v${version}";
-    hash = "sha256-A4bDCyvctHmDBYzvWpeEO4u6KhoICN7BbRQK4aZCbIA=";
+    hash = "sha256-Zcc860kQkVP1DPyadBoalhcvwh5HF9CgQyjzWRdeXt0=";
   };
 
-  vendorHash = "sha256-ZjkMvbWq96Rte9WoxAWzeouVA/6mBqanvY9yHr9F5MM=";
+  vendorHash = "sha256-d+jHGmCfx9Ffm5pajm1RvKnMea99JswL0I8nmILXN50=";
 
   doCheck = true;
 
@@ -37,7 +37,7 @@ buildGoModule rec {
   passthru = {
     updateScript = nix-update-script { };
     tests = {
-      inherit (nixosTests) prometheus;
+      inherit (nixosTests) thanos;
       version = testers.testVersion {
         command = "thanos --version";
         package = thanos;

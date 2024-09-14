@@ -12,8 +12,10 @@ emacs.section.md
 firefox.section.md
 fish.section.md
 fuse.section.md
+geant4.section.md
 ibus.section.md
 kakoune.section.md
+krita.section.md
 linux.section.md
 locales.section.md
 etc-files.section.md
@@ -23,6 +25,8 @@ shell-helpers.section.md
 steam.section.md
 cataclysm-dda.section.md
 urxvt.section.md
+vcpkg.section.md
 weechat.section.md
 xorg.section.md
+build-support.md
 ```

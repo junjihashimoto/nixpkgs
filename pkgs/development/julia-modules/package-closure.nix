@@ -42,8 +42,9 @@ let
 
   resolveCode1_8 = ''
     import Pkg.API: handle_package_input!
-    import Pkg.Types: PRESERVE_NONE, project_deps_resolve!, registry_resolve!, stdlib_resolve!, ensure_resolved
+    import Pkg.Types: PRESERVE_NONE, UUID, VersionSpec, project_deps_resolve!, registry_resolve!, stdlib_resolve!, ensure_resolved
     import Pkg.Operations: _resolve, assert_can_add, update_package_add
+    import TOML
 
     foreach(handle_package_input!, pkgs)
 
@@ -54,6 +55,18 @@ let
     for pkg in pkgs
       if pkg.name in keys(overrides)
         pkg.path = overrides[pkg.name]
+
+        # Try to read the UUID from $(pkg.path)/Project.toml. If successful, put the package into ctx.env.project.deps.
+        # This is necessary for the ensure_resolved call below to succeed, and will allow us to use an override even
+        # if it does not appear in the registry.
+        # See https://github.com/NixOS/nixpkgs/issues/279853
+        project_toml = joinpath(pkg.path, "Project.toml")
+        if isfile(project_toml)
+          toml_data = TOML.parsefile(project_toml)
+          if haskey(toml_data, "uuid")
+            ctx.env.project.deps[pkg.name] = UUID(toml_data["uuid"])
+          end
+        end
       end
     end
 
@@ -78,23 +91,27 @@ let
     pkgs, deps_map = _resolve(ctx.io, ctx.env, ctx.registries, pkgs, PRESERVE_NONE, ctx.julia_version)
 
     if VERSION >= VersionNumber("1.9")
-        # Check for weak dependencies, which appear on the RHS of the deps_map but not in pkgs.
-        # Build up weak_name_to_uuid
-        uuid_to_name = Dict()
-        for pkg in pkgs
-            uuid_to_name[pkg.uuid] = pkg.name
-        end
-        weak_name_to_uuid = Dict()
-        for (uuid, deps) in pairs(deps_map)
-            for (dep_name, dep_uuid) in pairs(deps)
-                if !haskey(uuid_to_name, dep_uuid)
-                    weak_name_to_uuid[dep_name] = dep_uuid
+        while true
+            # Check for weak dependencies, which appear on the RHS of the deps_map but not in pkgs.
+            # Build up weak_name_to_uuid
+            uuid_to_name = Dict()
+            for pkg in pkgs
+                uuid_to_name[pkg.uuid] = pkg.name
+            end
+            weak_name_to_uuid = Dict()
+            for (uuid, deps) in pairs(deps_map)
+                for (dep_name, dep_uuid) in pairs(deps)
+                    if !haskey(uuid_to_name, dep_uuid)
+                        weak_name_to_uuid[dep_name] = dep_uuid
+                    end
                 end
             end
-        end
 
-        # If we have nontrivial weak dependencies, add each one to the initial pkgs and then re-run _resolve
-        if !isempty(weak_name_to_uuid)
+            if isempty(weak_name_to_uuid)
+                break
+            end
+
+            # We have nontrivial weak dependencies, so add each one to the initial pkgs and then re-run _resolve
             println("Found weak dependencies: $(keys(weak_name_to_uuid))")
 
             orig_uuids = Set([pkg.uuid for pkg in orig_pkgs])
@@ -113,7 +130,7 @@ let
                 orig_pkgs[length(orig_pkgs)] = update_package_add(ctx, pkg, entry, false)
             end
 
-            pkgs, deps_map = _resolve(ctx.io, ctx.env, ctx.registries, orig_pkgs, PRESERVE_NONE, ctx.julia_version)
+            global pkgs, deps_map = _resolve(ctx.io, ctx.env, ctx.registries, orig_pkgs, PRESERVE_NONE, ctx.julia_version)
         end
     end
   '';

@@ -1,16 +1,18 @@
-{ lib
-, aiohttp
-, async-timeout
-, asyncio-dgram
-, buildPythonPackage
-, docutils
-, fetchFromGitHub
-, poetry-core
-, pytest-aiohttp
-, pytest-asyncio
-, pytestCheckHook
-, pythonOlder
-, voluptuous
+{
+  lib,
+  aiohttp,
+  async-timeout,
+  asyncio-dgram,
+  buildPythonPackage,
+  certifi,
+  docutils,
+  fetchFromGitHub,
+  poetry-core,
+  pytest-aiohttp,
+  pytest-asyncio,
+  pytestCheckHook,
+  pythonOlder,
+  voluptuous,
 }:
 
 buildPythonPackage rec {
@@ -27,14 +29,13 @@ buildPythonPackage rec {
     hash = "sha256-7fY8+aAxlDtOBLu8SadY5qiH6+RvxnFpOw1RXTonP2o=";
   };
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
+  nativeBuildInputs = [ poetry-core ];
 
   propagatedBuildInputs = [
     aiohttp
     async-timeout
     asyncio-dgram
+    certifi
     docutils
     voluptuous
   ];
@@ -46,13 +47,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  disabledTestPaths = [
-    "examples/"
-  ];
+  disabledTestPaths = [ "examples/" ];
 
-  pythonImportsCheck = [
-    "aioguardian"
-  ];
+  pythonImportsCheck = [ "aioguardian" ];
 
   meta = with lib; {
     description = " Python library to interact with Elexa Guardian devices";

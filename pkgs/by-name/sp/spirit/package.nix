@@ -3,18 +3,18 @@
 , fetchFromGitHub
 }:
 
-buildGoModule {
+buildGoModule rec {
   pname = "spirit";
-  version = "unstable-2023-12-15";
+  version = "0.5.0";
 
   src = fetchFromGitHub {
     owner = "cashapp";
     repo = "spirit";
-    rev = "3abce3e15c01b18e7a9fc12e19ad5c0f541d1ffd";
-    hash = "sha256-B4z5bdb0hRx7U2RLTRDxRYt1ltACNXz/B6qAs4qjtAo=";
+    rev = "v${version}-prerelease";
+    hash = "sha256-e0Eu7BeOwZA8UKwonuuOde1idzaIMtprWya7nxgqyjs=";
   };
 
-  vendorHash = "sha256-hKTQvTWd48mnVODWE6W541TPuxCyELLgpz96XB29kec=";
+  vendorHash = "sha256-es1PGgLoE3DklnQziRjWmY7f6NNVd24L2JiuLkol6HI=";
 
   subPackages = [ "cmd/spirit" ];
 

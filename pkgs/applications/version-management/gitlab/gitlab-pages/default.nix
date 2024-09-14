@@ -2,21 +2,22 @@
 
 buildGoModule rec {
   pname = "gitlab-pages";
-  version = "16.5.3";
+  version = "17.2.5";
 
   # nixpkgs-update: no auto update
   src = fetchFromGitLab {
     owner = "gitlab-org";
     repo = "gitlab-pages";
     rev = "v${version}";
-    hash = "sha256-eE+QuzqNm3zA0le8MWR3Kbc+/kQtKIrSd9sTmVYaNbQ=";
+    hash = "sha256-5qksHuY7EzCoCMBxF4souvUz8xFstfzOZT3CF5YsV7M=";
   };
 
-  vendorHash = "sha256-YG+ERETxp0BPh/V4820pMXTXu9YcodRhzme6qZJBC9Q=";
+  vendorHash = "sha256-yNHeM8MExcLwv2Ga4vtBmPFBt/Rj7Gd4QQYDlnAIo+c=";
   subPackages = [ "." ];
 
   meta = with lib; {
     description = "Daemon used to serve static websites for GitLab users";
+    mainProgram = "gitlab-pages";
     homepage = "https://gitlab.com/gitlab-org/gitlab-pages";
     changelog = "https://gitlab.com/gitlab-org/gitlab-pages/-/blob/v${version}/CHANGELOG.md";
     license = licenses.mit;

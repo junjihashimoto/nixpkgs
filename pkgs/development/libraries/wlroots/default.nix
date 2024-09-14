@@ -1,7 +1,6 @@
 { lib
 , stdenv
 , fetchFromGitLab
-, fetchpatch
 , meson
 , ninja
 , pkg-config
@@ -16,14 +15,16 @@
 , mesa
 , xorg
 , libpng
-, ffmpeg_4
+, ffmpeg
 , hwdata
 , seatd
 , vulkan-loader
 , glslang
 , libliftoff
 , libdisplay-info
+, lcms2
 , nixosTests
+, testers
 
 , enableXWayland ? true
 , xwayland ? null
@@ -57,7 +58,6 @@ let
         ++ extraNativeBuildInputs;
 
       buildInputs = [
-        ffmpeg_4
         libGL
         libcap
         libinput
@@ -95,10 +95,15 @@ let
       '';
 
       # Test via TinyWL (the "minimum viable product" Wayland compositor based on wlroots):
-      passthru.tests.tinywl = nixosTests.tinywl;
+      passthru.tests = {
+        tinywl = nixosTests.tinywl;
+        pkg-config = testers.hasPkgConfigModules {
+          package = finalAttrs.finalPackage;
+        };
+      };
 
       meta = {
-        description = "A modular Wayland compositor library";
+        description = "Modular Wayland compositor library";
         longDescription = ''
           Pluggable, composable, unopinionated modules for building a Wayland
           compositor; or about 50,000 lines of code you were going to write anyway.
@@ -108,41 +113,42 @@ let
         license = lib.licenses.mit;
         platforms = lib.platforms.linux;
         maintainers = with lib.maintainers; [ primeos synthetica rewine ];
+        pkgConfigModules = [
+          (if lib.versionOlder finalAttrs.version "0.18"
+           then "wlroots"
+           else "wlroots-${lib.versions.majorMinor finalAttrs.version}")
+        ];
       };
     });
 
 in
 rec {
-  wlroots_0_15 = generic {
-    version = "0.15.1";
-    hash = "sha256-MFR38UuB/wW7J9ODDUOfgTzKLse0SSMIRYTpEaEdRwM=";
-  };
-
-  wlroots_0_16 = generic {
-    version = "0.16.2";
-    hash = "sha256-JeDDYinio14BOl6CbzAPnJDOnrk4vgGNMN++rcy2ItQ=";
-    postPatch = ''
-      substituteInPlace backend/drm/meson.build \
-        --replace /usr/share/hwdata/ ${hwdata}/share/hwdata/
-    '';
-  };
-
   wlroots_0_17 = generic {
-    version = "0.17.0";
-    hash = "sha256-VUrnSG4UAAH0cBy15lG0w8RernwegD6lkOdLvWU3a4c=";
-    extraBuildInputs = [
+    version = "0.17.4";
+    hash = "sha256-AzmXf+HMX/6VAr0LpfHwfmDB9dRrrLQHt7l35K98MVo=";
+    extraNativeBuildInputs = [
       hwdata
+    ];
+    extraBuildInputs = [
+      ffmpeg
       libliftoff
       libdisplay-info
     ];
-    patches = [
-      (fetchpatch {
-        name = "tinywl-fix-wlroots-dependency-constraint-in-Makefile.patch";
-        url = "https://gitlab.freedesktop.org/wlroots/wlroots/-/commit/fe53ec693789afb44c899cad8c2df70c8f9f9023.patch";
-        hash = "sha256-wU62hXgmsAyT5j/bWeCFBkvM9cYjUntdCycQt5HAhb8=";
-      })
+  };
+
+  wlroots_0_18 = generic {
+    version = "0.18.0";
+    hash = "sha256-LiRnvu7qCbfSg+ONWVCtWwdzxxFZHfbgmy7zApCIW40=";
+    extraNativeBuildInputs = [
+      hwdata
+    ];
+    extraBuildInputs = [
+      ffmpeg
+      libliftoff
+      libdisplay-info
+      lcms2
     ];
   };
 
-  wlroots = wlroots_0_17;
+  wlroots = wlroots_0_18;
 }

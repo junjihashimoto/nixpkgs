@@ -1,13 +1,13 @@
 { lib, buildGoModule, fetchFromGitHub, nixosTests, nix-update-script }:
 buildGoModule rec {
   pname = "mimir";
-  version = "2.10.5";
+  version = "2.13.0";
 
   src = fetchFromGitHub {
     rev = "${pname}-${version}";
     owner = "grafana";
     repo = pname;
-    hash = "sha256-+Xlejvdpum1UMUhELUzcF9bJOXx4tIkDA8wHrE88U5w=";
+    hash = "sha256-XBCwc3jpLx8uj+UitFsoIAWVgC/2G8rgjOqrrLLyYdM=";
   };
 
   vendorHash = null;
@@ -15,7 +15,16 @@ buildGoModule rec {
   subPackages = [
     "cmd/mimir"
     "cmd/mimirtool"
-  ];
+  ] ++ (map (pathName: "tools/${pathName}") [
+    "compaction-planner"
+    "copyblocks"
+    "copyprefix"
+    "delete-objects"
+    "list-deduplicated-blocks"
+    "listblocks"
+    "markblocks"
+    "undelete-blocks"
+  ]);
 
   passthru = {
     updateScript = nix-update-script {

@@ -23,11 +23,11 @@
 
 stdenv.mkDerivation rec {
   pname = "libpcap";
-  version = "1.10.4";
+  version = "1.10.5";
 
   src = fetchurl {
     url = "https://www.tcpdump.org/release/${pname}-${version}.tar.gz";
-    hash = "sha256-7RmgOD+tcuOtQ1/SOdfNgNZJFrhyaVUBWdIORxYOvl8=";
+    hash = "sha256-N87ZChmjAqfzLkWCJKAMNlwReQXCzTWsVEtogKgUiPA=";
   };
 
   buildInputs = lib.optionals stdenv.isLinux [ libnl ]
@@ -63,6 +63,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     homepage = "https://www.tcpdump.org";
     description = "Packet Capture Library";
+    mainProgram = "pcap-config";
     platforms = platforms.unix;
     maintainers = with maintainers; [ fpletz ];
     license = licenses.bsd3;

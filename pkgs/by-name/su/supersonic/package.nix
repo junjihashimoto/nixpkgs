@@ -20,16 +20,16 @@ assert waylandSupport -> stdenv.isLinux;
 
 buildGoModule rec {
   pname = "supersonic" + lib.optionalString waylandSupport "-wayland";
-  version = "0.8.2";
+  version = "0.13.1";
 
   src = fetchFromGitHub {
     owner = "dweymouth";
     repo = "supersonic";
     rev = "v${version}";
-    hash = "sha256-hhFnOxWXR91WpB51c4fvIENoAtqPj+VmPImGcXwTH0o=";
+    hash = "sha256-hJLooKH5jketvPTfTtkNBQL1F9lzBEhDZuUXZRFEcWo=";
   };
 
-  vendorHash = "sha256-oAp3paXWXtTB+1UU/KGewCDQWye16rxNnNWQMdrhgP0=";
+  vendorHash = "sha256-wT1WvwUUAnMIKa+RlRDD2QGJpZMtoecQCxSJekM6PdM=";
 
   nativeBuildInputs = [
     copyDesktopItems

@@ -1,5 +1,6 @@
 { lib
 , stdenv
+, gcc12Stdenv
 , fetchFromGitHub
 , rocmUpdateScript
 , pkg-config
@@ -44,6 +45,13 @@
 , isBroken ? false
 }:
 
+let stdenv' = stdenv; in
+let stdenv =
+      if stdenv'.cc.cc.isGNU or false && lib.versionAtLeast stdenv'.cc.cc.version "13.0"
+      then gcc12Stdenv
+      else stdenv';
+in
+
 let
   llvmNativeTarget =
     if stdenv.isx86_64 then "X86"
@@ -78,7 +86,7 @@ in stdenv.mkDerivation (finalAttrs: {
     cmake
     ninja
     git
-    python3Packages.python
+    (python3Packages.python.withPackages (p: [ p.setuptools ]))
   ] ++ lib.optionals (buildDocs || buildMan) [
     doxygen
     sphinx

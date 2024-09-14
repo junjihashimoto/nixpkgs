@@ -1,11 +1,18 @@
-{ version
+{ useNixpkgsEngine ? false
+, version
 , engineVersion
+, engineHashes ? {}
+, engineUrl ? "https://github.com/flutter/engine.git@${engineVersion}"
+, enginePatches ? []
+, engineRuntimeModes ? [ "release" "debug" ]
+, engineSwiftShaderHash
+, engineSwiftShaderRev
 , patches
+, channel
 , dart
 , src
-, pubspecLockFile
-, vendorHash
-, depsListFile
+, pubspecLock
+, artifactHashes ? null
 , lib
 , stdenv
 , callPackage
@@ -13,15 +20,35 @@
 , darwin
 , git
 , which
-}:
+, jq
+, flutterTools ? null
+}@args:
 
 let
-  tools = callPackage ./flutter-tools.nix {
+  engine = if args.useNixpkgsEngine or false then
+    callPackage ./engine/default.nix {
+      inherit (args) dart;
+      dartSdkVersion = args.dart.version;
+      flutterVersion = version;
+      swiftshaderRev = engineSwiftShaderRev;
+      swiftshaderHash = engineSwiftShaderHash;
+      version = engineVersion;
+      hashes = engineHashes;
+      url = engineUrl;
+      patches = enginePatches;
+      runtimeModes = engineRuntimeModes;
+    } else null;
+
+  dart = if args.useNixpkgsEngine or false then
+    engine.dart else args.dart;
+
+  flutterTools = args.flutterTools or (callPackage ./flutter-tools.nix {
     inherit dart version;
     flutterSrc = src;
     inherit patches;
-    inherit pubspecLockFile vendorHash depsListFile;
-  };
+    inherit pubspecLock;
+    systemPlatform = stdenv.hostPlatform.system;
+  });
 
   unwrapped =
     stdenv.mkDerivation {
@@ -29,7 +56,7 @@ let
       inherit src patches version;
 
       buildInputs = [ git ];
-      nativeBuildInputs = [ makeWrapper ]
+      nativeBuildInputs = [ makeWrapper jq ]
         ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ];
 
       preConfigure = ''
@@ -60,15 +87,32 @@ let
         # Add a flutter_tools artifact stamp, and build a snapshot.
         # This is the Flutter CLI application.
         echo "$(git rev-parse HEAD)" > bin/cache/flutter_tools.stamp
-        ln -s '${tools}/share/flutter_tools.snapshot' bin/cache/flutter_tools.snapshot
+        ln -s '${flutterTools}/share/flutter_tools.snapshot' bin/cache/flutter_tools.snapshot
 
         # Some of flutter_tools's dependencies contain static assets. The
         # application attempts to read its own package_config.json to find these
         # assets at runtime.
         mkdir -p packages/flutter_tools/.dart_tool
-        ln -s '${tools.dartDeps.packageConfig}' packages/flutter_tools/.dart_tool/package_config.json
+        ln -s '${flutterTools.pubcache}/package_config.json' packages/flutter_tools/.dart_tool/package_config.json
 
         echo -n "${version}" > version
+        cat <<EOF > bin/cache/flutter.version.json
+        {
+          "devToolsVersion": "$(cat "${dart}/bin/resources/devtools/version.json" | jq -r .version)",
+          "flutterVersion": "${version}",
+          "frameworkVersion": "${version}",
+          "channel": "${channel}",
+          "repositoryUrl": "https://github.com/flutter/flutter.git",
+          "frameworkRevision": "nixpkgs000000000000000000000000000000000",
+          "frameworkCommitDate": "1970-01-01 00:00:00",
+          "engineRevision": "${engineVersion}",
+          "dartSdkVersion": "${dart.version}"
+        }
+        EOF
+
+        # Suppress a small error now that `.gradle`'s location changed.
+        # Location changed because of the patch "gradle-flutter-tools-wrapper.patch".
+        mkdir -p "$out/packages/flutter_tools/gradle/.gradle"
       '';
 
       installPhase = ''
@@ -107,11 +151,15 @@ let
       '';
 
       passthru = {
-        inherit dart engineVersion tools;
+        # TODO: rely on engine.version instead of engineVersion
+        inherit dart engineVersion artifactHashes channel;
+        tools = flutterTools;
         # The derivation containing the original Flutter SDK files.
         # When other derivations wrap this one, any unmodified files
         # found here should be included as-is, for tooling compatibility.
         sdk = unwrapped;
+      } // lib.optionalAttrs (engine != null) {
+        inherit engine;
       };
 
       meta = with lib; {
@@ -122,8 +170,10 @@ let
         '';
         homepage = "https://flutter.dev";
         license = licenses.bsd3;
-        platforms = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" ];
-        maintainers = with maintainers; [ babariviere ericdallo FlafyDev hacker1024 ];
+        platforms = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+        maintainers = teams.flutter.members ++ (with maintainers; [
+          ericdallo
+        ]);
       };
     };
 in

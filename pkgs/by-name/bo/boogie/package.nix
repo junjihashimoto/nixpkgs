@@ -2,13 +2,13 @@
 
 buildDotnetModule rec {
   pname = "Boogie";
-  version = "3.0.9";
+  version = "3.2.4";
 
   src = fetchFromGitHub {
     owner = "boogie-org";
     repo = "boogie";
     rev = "v${version}";
-    sha256 = "sha256-8hujTiUO62yfv3T/Fu5unTuvJXLGgn9BXoCA2oag3jQ=";
+    sha256 = "sha256-wpMENrhfD8+bt66gd29xkfLANcMbPpkzDacj0KPuXT4=";
   };
 
   projectFile = [ "Source/Boogie.sln" ];
@@ -41,7 +41,7 @@ buildDotnetModule rec {
   '';
 
   meta = with lib; {
-    description = "An intermediate verification language";
+    description = "Intermediate verification language";
     homepage = "https://github.com/boogie-org/boogie";
     longDescription = ''
       Boogie is an intermediate verification language (IVL), intended as a

@@ -10,6 +10,7 @@ automake.section.md
 autopatchelf.section.md
 bmake.section.md
 breakpoint.section.md
+cernlib.section.md
 cmake.section.md
 gdk-pixbuf.section.md
 ghc.section.md
@@ -29,6 +30,7 @@ scons.section.md
 tetex-tex-live.section.md
 unzip.section.md
 validatePkgConfig.section.md
+versionCheckHook.section.md
 waf.section.md
 zig.section.md
 xcbuild.section.md

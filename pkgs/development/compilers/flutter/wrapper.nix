@@ -3,14 +3,14 @@
 , darwin
 , callPackage
 , flutter
-, supportedTargetPlatforms ? [
+, supportedTargetFlutterPlatforms ? [
     "universal"
     "web"
   ]
-  ++ lib.optional stdenv.hostPlatform.isLinux "linux"
+  ++ lib.optional (stdenv.hostPlatform.isLinux && !(flutter ? engine)) "linux"
   ++ lib.optional (stdenv.hostPlatform.isx86_64 || stdenv.hostPlatform.isDarwin) "android"
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "macos" "ios" ]
-, artifactHashes ? (import ./artifacts/hashes.nix).${flutter.version}
+, artifactHashes ? flutter.artifactHashes
 , extraPkgConfigPackages ? [ ]
 , extraLibraries ? [ ]
 , extraIncludes ? [ ]
@@ -20,7 +20,7 @@
 , makeWrapper
 , runCommandLocal
 , writeShellScript
-, wrapGAppsHook
+, wrapGAppsHook3
 , git
 , which
 , pkg-config
@@ -44,25 +44,26 @@
 }:
 
 let
-  supportsLinuxDesktopTarget = builtins.elem "linux" supportedTargetPlatforms;
+  supportsLinuxDesktopTarget = builtins.elem "linux" supportedTargetFlutterPlatforms;
 
-  platformArtifacts = lib.genAttrs supportedTargetPlatforms (platform:
+  flutterPlatformArtifacts = lib.genAttrs supportedTargetFlutterPlatforms (flutterPlatform:
     (callPackage ./artifacts/prepare-artifacts.nix {
       src = callPackage ./artifacts/fetch-artifacts.nix {
-        inherit platform;
+        inherit flutterPlatform;
+        systemPlatform = stdenv.hostPlatform.system;
         flutter = callPackage ./wrapper.nix { inherit flutter; };
-        hash = artifactHashes.${platform}.${stdenv.hostPlatform.system} or "";
+        hash = artifactHashes.${flutterPlatform}.${stdenv.hostPlatform.system} or "";
       };
     }));
 
   cacheDir = symlinkJoin rec {
     name = "flutter-cache-dir";
-    paths = builtins.attrValues platformArtifacts;
+    paths = builtins.attrValues flutterPlatformArtifacts;
     postBuild = ''
       mkdir -p "$out/bin/cache"
       ln -s '${flutter}/bin/cache/dart-sdk' "$out/bin/cache"
     '';
-    passthru.platform = platformArtifacts;
+    passthru.flutterPlatform = flutterPlatformArtifacts;
   };
 
   # By default, Flutter stores downloaded files (such as the Pub cache) in the SDK directory.
@@ -122,11 +123,12 @@ in
 
   nativeBuildInputs = [ makeWrapper ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ]
-    ++ lib.optionals supportsLinuxDesktopTarget [ glib wrapGAppsHook ];
+    ++ lib.optionals supportsLinuxDesktopTarget [ glib wrapGAppsHook3 ];
 
   passthru = flutter.passthru // {
     inherit (flutter) version;
     unwrapped = flutter;
+    updateScript = ./update/update.py;
     inherit cacheDir;
   };
 
@@ -143,7 +145,10 @@ in
     mkdir -p $out/bin
     makeWrapper '${immutableFlutter}' $out/bin/flutter \
       --set-default ANDROID_EMULATOR_USE_SYSTEM_LIBS 1 \
-      --suffix PATH : '${lib.makeBinPath (tools ++ buildTools)}' \
+      '' + lib.optionalString (flutter ? engine && flutter.engine.meta.available) ''
+        --set-default FLUTTER_ENGINE "${flutter.engine}" \
+        --add-flags "--local-engine-host ${flutter.engine.outName}" \
+      '' + '' --suffix PATH : '${lib.makeBinPath (tools ++ buildTools)}' \
       --suffix PKG_CONFIG_PATH : "$FLUTTER_PKG_CONFIG_PATH" \
       --suffix LIBRARY_PATH : '${lib.makeLibraryPath appStaticBuildDeps}' \
       --prefix CXXFLAGS "''\t" '${builtins.concatStringsSep " " (includeFlags ++ extraCxxFlags)}' \

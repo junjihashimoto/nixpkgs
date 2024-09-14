@@ -2,10 +2,11 @@
 , runtimeShell, nixosTests
 , autoreconfHook, bison, flex
 , docbook_xml_dtd_45, docbook_xsl
-, itstool, libbsd, libxml2, libxslt
+, itstool, libxml2, libxslt
 , libxcrypt, pkg-config
 , glibcCross ? null
 , pam ? null
+, withLibbsd ? lib.meta.availableOn stdenv.hostPlatform libbsd, libbsd
 , withTcb ? lib.meta.availableOn stdenv.hostPlatform tcb, tcb
 }:
 let
@@ -17,13 +18,13 @@ in
 
 stdenv.mkDerivation rec {
   pname = "shadow";
-  version = "4.14.2";
+  version = "4.16.0";
 
   src = fetchFromGitHub {
     owner = "shadow-maint";
     repo = pname;
     rev = version;
-    hash = "sha256-8sFXxP4MPFzKfBHzlKlsibj0lVQKJbC/Z7pWCy3WEuc=";
+    hash = "sha256-GAwwpyIN5qWSIapjGFfOxPbOx5G6//fEbTpPmkXh6uA=";
   };
 
   outputs = [ "out" "su" "dev" "man" ];
@@ -37,8 +38,9 @@ stdenv.mkDerivation rec {
     pkg-config
   ];
 
-  buildInputs = [ libbsd libxcrypt ]
+  buildInputs = [ libxcrypt ]
     ++ lib.optional (pam != null && stdenv.isLinux) pam
+    ++ lib.optional withLibbsd libbsd
     ++ lib.optional withTcb tcb;
 
   patches = [
@@ -66,6 +68,7 @@ stdenv.mkDerivation rec {
     "--with-group-name-max-length=32"
     "--with-bcrypt"
     "--with-yescrypt"
+    (lib.withFeature withLibbsd "libbsd")
   ] ++ lib.optional (stdenv.hostPlatform.libc != "glibc") "--disable-nscd"
     ++ lib.optional withTcb "--with-tcb";
 

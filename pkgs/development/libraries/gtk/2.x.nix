@@ -2,6 +2,7 @@
 , lib
 , stdenv
 , fetchurl
+, fetchpatch
 , atk
 , buildPackages
 , cairo
@@ -63,6 +64,12 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./patches/2.0-immodules.cache.patch
     ./patches/gtk2-theme-paths.patch
+    (fetchpatch {
+      # https://gitlab.gnome.org/GNOME/gtk/-/issues/6786
+      name = "CVE-2024-6655.patch";
+      url = "https://gitlab.gnome.org/GNOME/gtk/-/commit/3bbf0b6176d42836d23c36a6ac410e807ec0a7a7.patch";
+      hash = "sha256-mstOPk9NNpUwScrdEbvGhmAv8jlds3SBdj53T0q33vM=";
+    })
   ] ++ lib.optionals stdenv.isDarwin [
     ./patches/2.0-gnome_bugzilla_557780_306776_freeciv_darwin.patch
     ./patches/2.0-darwin-x11.patch
@@ -109,6 +116,13 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_path_GDK_PIXBUF_CSOURCE=${buildPackages.gdk-pixbuf.dev}/bin/gdk-pixbuf-csource"
   ];
 
+  env = lib.optionalAttrs stdenv.cc.isGNU {
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-error=implicit-int"
+      "-Wno-error=incompatible-pointer-types"
+    ];
+  };
+
   enableParallelBuilding = true;
 
   installFlags = [
@@ -134,7 +148,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "https://www.gtk.org/";
-    description = "A multi-platform toolkit for creating graphical user interfaces";
+    description = "Multi-platform toolkit for creating graphical user interfaces";
     longDescription = ''
       GTK is a highly usable, feature rich toolkit for creating graphical user
       interfaces which boasts cross platform compatibility and an easy to use

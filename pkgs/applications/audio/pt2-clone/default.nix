@@ -6,15 +6,15 @@
 , SDL2
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "pt2-clone";
-  version = "1.65.1";
+  version = "1.70";
 
   src = fetchFromGitHub {
     owner = "8bitbubsy";
     repo = "pt2-clone";
-    rev = "v${version}";
-    sha256 = "sha256-0bZGiulLeAZ8bR0lj0Bm7te3T3YhxSOBFgMgWADRkIY=";
+    rev = "v${finalAttrs.version}";
+    sha256 = "sha256-oGdgvyVIqM4YVxyr5DFBJ+YLtH95vqbNv0arD9yskdo=";
   };
 
   nativeBuildInputs = [ cmake ];
@@ -22,9 +22,13 @@ stdenv.mkDerivation rec {
 
   postInstall = ''
     install -Dm444 "$src/release/other/Freedesktop.org Resources/ProTracker 2 clone.desktop" \
-      -t $out/share/applications
+      $out/share/applications/pt2-clone.desktop
     install -Dm444 "$src/release/other/Freedesktop.org Resources/ProTracker 2 clone.png" \
-      -t $out/share/icons/hicolor/512x512/apps
+      $out/share/icons/hicolor/512x512/apps/pt2-clone.png
+    # gtk-update-icon-cache does not like whitespace. Note that removing this
+    # will not make the build fail, but it will make the NixOS test fail.
+    substituteInPlace $out/share/applications/pt2-clone.desktop \
+      --replace-fail "Icon=ProTracker 2 clone" Icon=pt2-clone
   '';
 
   passthru.tests = {
@@ -32,13 +36,13 @@ stdenv.mkDerivation rec {
   };
 
   meta = with lib; {
-    description = "A highly accurate clone of the classic ProTracker 2.3D software for Amiga";
+    description = "Highly accurate clone of the classic ProTracker 2.3D software for Amiga";
     homepage = "https://16-bits.org/pt2.php";
     license = licenses.bsd3;
     maintainers = with maintainers; [ fgaz ];
     # From HOW-TO-COMPILE.txt:
     # > This code is NOT big-endian compatible
     platforms = platforms.littleEndian;
+    mainProgram = "pt2-clone";
   };
-}
-
+})

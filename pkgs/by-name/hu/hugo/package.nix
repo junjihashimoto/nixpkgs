@@ -1,6 +1,6 @@
 { stdenv
 , lib
-, buildGoModule
+, buildGo123Module
 , fetchFromGitHub
 , installShellFiles
 , buildPackages
@@ -8,18 +8,18 @@
 , hugo
 }:
 
-buildGoModule rec {
+buildGo123Module rec {
   pname = "hugo";
-  version = "0.121.1";
+  version = "0.134.0";
 
   src = fetchFromGitHub {
     owner = "gohugoio";
     repo = "hugo";
     rev = "refs/tags/v${version}";
-    hash = "sha256-XNOp0k2t5Tv4HKKz3ZqL/sAdiYedOACaZ/1T7t7/Q1A=";
+    hash = "sha256-XglHrV+MD9Nq1qwJB63eATuS+6SwjZVF5u6H5EejEow=";
   };
 
-  vendorHash = "sha256-J/me67pC+YWjGIQP6q1c+vsSXFxXoLZV7AyDv3+606k=";
+  vendorHash = "sha256-oDa5uWQ/vFSmTNwZ3zsYtsuLCzddV9DeaEGx5krwWRE=";
 
   doCheck = false;
 
@@ -50,7 +50,7 @@ buildGoModule rec {
 
   meta = {
     changelog = "https://github.com/gohugoio/hugo/releases/tag/v${version}";
-    description = "A fast and modern static website engine";
+    description = "Fast and modern static website engine";
     homepage = "https://gohugo.io";
     license = lib.licenses.asl20;
     mainProgram = "hugo";

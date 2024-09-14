@@ -3,9 +3,12 @@
 , buildGoModule
 , fetchFromGitHub
 , php
+, brotli
 , testers
 , frankenphp
+, cctools
 , darwin
+, libiconv
 , pkg-config
 , makeBinaryWrapper
 , runCommand
@@ -25,24 +28,24 @@ let
   pieBuild = stdenv.hostPlatform.isMusl;
 in buildGoModule rec {
   pname = "frankenphp";
-  version = "1.0.2";
+  version = "1.2.5";
 
   src = fetchFromGitHub {
     owner = "dunglas";
     repo = "frankenphp";
     rev = "v${version}";
-    hash = "sha256-iR47S52L2cMORE2MOzddFRDwlqaHAtB8dJs/UrufB0w=";
+    hash = "sha256-X6lWbxgqj0wis/cljoNSh7AsH1zY30GTjSOAGXzUIek=";
   };
 
-  sourceRoot = "source/caddy";
+  sourceRoot = "${src.name}/caddy";
 
   # frankenphp requires C code that would be removed with `go mod tidy`
   # https://github.com/golang/go/issues/26366
   proxyVendor = true;
-  vendorHash = "sha256-ZkbhpY8+BSTSdzQGsvXUfTBdTPUvQ8tHjbnr0lYho5I=";
+  vendorHash = "sha256-U2B0ok6TgqUPMwlnkzpPkJLG22S3VpoU80bWwZAeaJo=";
 
-  buildInputs = [ phpUnwrapped ] ++ phpUnwrapped.buildInputs;
-  nativeBuildInputs = [ makeBinaryWrapper ] ++ lib.optionals stdenv.isDarwin [ pkg-config darwin.cctools darwin.autoSignDarwinBinariesHook ];
+  buildInputs = [ phpUnwrapped brotli ] ++ phpUnwrapped.buildInputs;
+  nativeBuildInputs = [ makeBinaryWrapper ] ++ lib.optionals stdenv.isDarwin [ pkg-config cctools darwin.autoSignDarwinBinariesHook ];
 
   subPackages = [ "frankenphp" ];
 
@@ -52,7 +55,7 @@ in buildGoModule rec {
     "-s"
     "-w"
     "-X 'github.com/caddyserver/caddy/v2.CustomVersion=FrankenPHP ${version} PHP ${phpUnwrapped.version} Caddy'"
-    # pie mode is only available with pkgsMusl, it also automaticaly add -buildmode=pie to $GOFLAGS
+    # pie mode is only available with pkgsMusl, it also automatically add -buildmode=pie to $GOFLAGS
   ]  ++ (lib.optional pieBuild [ "-static-pie" ]);
 
   preBuild = ''
@@ -63,7 +66,7 @@ in buildGoModule rec {
   '' + lib.optionalString stdenv.isDarwin ''
     # replace hard-code homebrew path
     substituteInPlace ../frankenphp.go \
-      --replace "-L/opt/homebrew/opt/libiconv/lib" "-L${darwin.libiconv}/lib"
+      --replace "-L/opt/homebrew/opt/libiconv/lib" "-L${libiconv}/lib"
   '';
 
   preFixup = ''
@@ -94,13 +97,13 @@ in buildGoModule rec {
     };
   };
 
-  meta = with lib; {
+  meta = {
     changelog = "https://github.com/dunglas/frankenphp/releases/tag/v${version}";
-    description = "The modern PHP app server";
+    description = "Modern PHP app server";
     homepage = "https://github.com/dunglas/frankenphp";
-    license = licenses.mit;
+    license = lib.licenses.mit;
     mainProgram = "frankenphp";
-    maintainers = with maintainers; [ gaelreyrol shyim ];
-    platforms = platforms.linux ++ platforms.darwin;
+    maintainers = with lib.maintainers; [ gaelreyrol shyim ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

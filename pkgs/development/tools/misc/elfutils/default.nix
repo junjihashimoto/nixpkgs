@@ -1,18 +1,18 @@
 { lib, stdenv, fetchurl, fetchpatch, pkg-config, musl-fts
 , musl-obstack, m4, zlib, zstd, bzip2, bison, flex, gettext, xz, setupDebugInfoDirs
 , argp-standalone
-, enableDebuginfod ? true, sqlite, curl, libmicrohttpd, libarchive
+, enableDebuginfod ? lib.meta.availableOn stdenv.hostPlatform libarchive, sqlite, curl, libmicrohttpd, libarchive
 , gitUpdater
 }:
 
 # TODO: Look at the hardcoded paths to kernel, modules etc.
 stdenv.mkDerivation rec {
   pname = "elfutils";
-  version = "0.190";
+  version = "0.191";
 
   src = fetchurl {
     url = "https://sourceware.org/elfutils/ftp/${version}/${pname}-${version}.tar.bz2";
-    hash = "sha256-jgCjqbXwS8HcJzroYoHS0m7UEgILOR/8wjGY8QIx1pI=";
+    hash = "sha256-33bbcTZtHXCDZfx6bGDKSDmPFDZ+sriVTvyIlxR62HE=";
   };
 
   patches = [
@@ -73,15 +73,29 @@ stdenv.mkDerivation rec {
     "--enable-deterministic-archives"
     (lib.enableFeature enableDebuginfod "libdebuginfod")
     (lib.enableFeature enableDebuginfod "debuginfod")
-  ];
+
+    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101766
+    # Versioned symbols are nice to have, but we can do without.
+    (lib.enableFeature (!stdenv.hostPlatform.isMicroBlaze) "symbol-versioning")
+  ] ++ lib.optional (stdenv.targetPlatform.useLLVM or false) "--disable-demangler"
+    ++ lib.optionals stdenv.cc.isClang [
+      "CFLAGS=-Wno-unused-private-field"
+      "CXXFLAGS=-Wno-unused-private-field"
+    ];
 
   enableParallelBuilding = true;
 
-  # Backtrace unwinding tests rely on glibc-internal symbol names.
-  # Musl provides slightly different forms and fails.
-  # Let's disable tests there until musl support is fully upstreamed.
-  doCheck = !stdenv.hostPlatform.isMusl;
-  doInstallCheck = !stdenv.hostPlatform.isMusl;
+
+  doCheck =
+    # Backtrace unwinding tests rely on glibc-internal symbol names.
+    # Musl provides slightly different forms and fails.
+    # Let's disable tests there until musl support is fully upstreamed.
+    !stdenv.hostPlatform.isMusl
+    # Test suite tries using `uname` to determine whether certain tests
+    # can be executed, so we need to match build and host platform exactly.
+    && (stdenv.hostPlatform == stdenv.buildPlatform);
+  doInstallCheck = !stdenv.hostPlatform.isMusl
+    && (stdenv.hostPlatform == stdenv.buildPlatform);
 
   passthru.updateScript = gitUpdater {
     url = "https://sourceware.org/git/elfutils.git";
@@ -90,13 +104,13 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://sourceware.org/elfutils/";
-    description = "A set of utilities to handle ELF objects";
+    description = "Set of utilities to handle ELF objects";
     platforms = platforms.linux;
     # https://lists.fedorahosted.org/pipermail/elfutils-devel/2014-November/004223.html
-    broken = stdenv.hostPlatform.isStatic;
+    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
     # licenses are GPL2 or LGPL3+ for libraries, GPL3+ for bins,
     # but since this package isn't split that way, all three are listed.
     license = with licenses; [ gpl2Only lgpl3Plus gpl3Plus ];
-    maintainers = with maintainers; [ eelco r-burns ];
+    maintainers = with maintainers; [ r-burns ];
   };
 }

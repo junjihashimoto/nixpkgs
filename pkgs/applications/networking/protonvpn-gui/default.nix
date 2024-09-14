@@ -3,7 +3,7 @@
 , fetchFromGitHub
 , gobject-introspection
 , setuptools
-, wrapGAppsHook
+, wrapGAppsHook3
 , dbus-python
 , packaging
 , proton-core
@@ -19,6 +19,7 @@
 , proton-vpn-session
 , pycairo
 , pygobject3
+, pytest-cov-stub
 , pytestCheckHook
 , withIndicator ? true
 , libappindicator-gtk3
@@ -27,21 +28,21 @@
 
 buildPythonApplication rec {
   pname = "protonvpn-gui";
-  version = "4.1.0-unstable-2023-10-25";
+  version = "4.3.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ProtonVPN";
     repo = "proton-vpn-gtk-app";
-    rev = "713324e9e4ee9f030c8115072cae379eb3340c42";
-    hash = "sha256-DfuM4b2cSIA8j9Ux3TzInRCvzQGb9LvJDSwRhfadBPY=";
+    rev = "refs/tags/v${version}";
+    hash = "sha256-H4m4u9zksab47W5aIsQZPQTPEYiXbmrVCnT67b+A5Tc=";
   };
 
   nativeBuildInputs = [
     # Needed for the NM namespace
     gobject-introspection
     setuptools
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   buildInputs = lib.optionals withIndicator [
@@ -69,11 +70,6 @@ buildPythonApplication rec {
     pygobject3
   ];
 
-  postPatch = ''
-    substituteInPlace setup.cfg \
-      --replace "--cov=proton --cov-report=html --cov-report=term" ""
-  '';
-
   postInstall = ''
     mkdir -p $out/share/{applications,pixmaps}
     install -Dm 644 ${src}/rpmbuild/SOURCES/protonvpn-app.desktop $out/share/applications
@@ -81,6 +77,7 @@ buildPythonApplication rec {
   '';
 
   nativeCheckInputs = [
+    pytest-cov-stub
     pytestCheckHook
   ];
 
@@ -98,6 +95,6 @@ buildPythonApplication rec {
     license = licenses.gpl3Plus;
     platforms = platforms.linux;
     mainProgram = "protonvpn-app";
-    maintainers = with maintainers; [ wolfangaukang ];
+    maintainers = [ ];
   };
 }

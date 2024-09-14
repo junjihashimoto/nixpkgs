@@ -12,19 +12,18 @@
 , js_of_ocaml-lwt
 , js_of_ocaml-tyxml
 , lwt_ppx
-, ocamlnet
 , ocsipersist
 }:
 
 buildDunePackage rec {
   pname = "eliom";
-  version = "10.1.2";
+  version = "11.0.0";
 
   src = fetchFromGitHub {
     owner = "ocsigen";
     repo = "eliom";
     rev = version;
-    hash = "sha256-Cxwp534ADUO7AHnxZnGsrqxGDkhcJ314M5wytO4e8/0=";
+    hash = "sha256-RgIK3xkKdX+zOurhML4370rsO4blJrWoEla09Nfe9Mw=";
   };
 
   nativeBuildInputs = [
@@ -33,7 +32,6 @@ buildDunePackage rec {
   buildInputs = [
     js_of_ocaml-ocamlbuild
     js_of_ocaml-ppx_deriving_json
-    ocamlnet
     ppx_optcomp
   ];
 

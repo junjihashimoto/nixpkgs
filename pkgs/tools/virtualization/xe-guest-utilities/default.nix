@@ -6,13 +6,13 @@
 
 buildGoModule rec {
   pname = "xe-guest-utilities";
-  version = "8.3.1";
+  version = "8.4.0";
 
   src = fetchFromGitHub {
     owner = "xenserver";
     repo = "xe-guest-utilities";
     rev = "v${version}";
-    hash = "sha256-d0WdezcT44ExeHSnoJ3Dn0u/IRlhWreOZPSVw6Q1h/w=";
+    hash = "sha256-LpZx+Km2qRywYK/eFLP3aCDku6K6HC4+MzEODH+8Gvs=";
   };
 
   deleteVendor = true;
@@ -44,7 +44,7 @@ buildGoModule rec {
     description = "XenServer guest utilities";
     homepage = "https://github.com/xenserver/xe-guest-utilities";
     license = lib.licenses.bsd2;
-    maintainers = with lib.maintainers; [ ];
+    maintainers = [ ];
     platforms = lib.platforms.linux;
   };
 }

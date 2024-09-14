@@ -1,17 +1,18 @@
 { lib, stdenv, fetchurl, pkg-config, gnutls, liburcu, lmdb, libcap_ng, libidn2, libunistring
 , systemd, nettle, libedit, zlib, libiconv, libintl, libmaxminddb, libbpf, nghttp2, libmnl
 , ngtcp2-gnutls, xdp-tools
+, sphinx
 , autoreconfHook
 , nixosTests, knot-resolver, knot-dns, runCommandLocal
 }:
 
 stdenv.mkDerivation rec {
   pname = "knot-dns";
-  version = "3.3.3";
+  version = "3.4.0";
 
   src = fetchurl {
     url = "https://secure.nic.cz/files/knot-dns/knot-${version}.tar.xz";
-    sha256 = "aab40aab2acd735c500f296bacaa5c84ff0488221a4068ce9946e973beacc5ae";
+    sha256 = "2730b11398944faa5151c51b0655cf26631090343c303597814f2a57df424736";
   };
 
   outputs = [ "bin" "out" "dev" ];
@@ -29,7 +30,8 @@ stdenv.mkDerivation rec {
     ./runtime-deps.patch
   ];
 
-  nativeBuildInputs = [ pkg-config autoreconfHook ];
+  # FIXME: sphinx is needed for now to get man-pages
+  nativeBuildInputs = [ pkg-config autoreconfHook sphinx ];
   buildInputs = [
     gnutls liburcu libidn2 libunistring
     nettle libedit
@@ -46,9 +48,7 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  CFLAGS = [ "-O2" "-DNDEBUG" ]
-    # https://gitlab.nic.cz/knot/knot-dns/-/issues/909
-    ++ lib.optional stdenv.isDarwin "-D__APPLE_USE_RFC_3542";
+  CFLAGS = [ "-O2" "-DNDEBUG" ];
 
   doCheck = true;
   checkFlags = [ "V=1" ]; # verbose output in case some test fails

@@ -19,12 +19,16 @@
 , libvisual
 , tremor # provides 'virbisidec'
 , libGL
+, withIntrospection ? lib.meta.availableOn stdenv.hostPlatform gobject-introspection && stdenv.hostPlatform.emulatorAvailable buildPackages
+, buildPackages
 , gobject-introspection
 , enableX11 ? stdenv.isLinux
 , libXext
 , libXi
 , libXv
+, libdrm
 , enableWayland ? stdenv.isLinux
+, wayland-scanner
 , wayland
 , wayland-protocols
 , enableAlsa ? stdenv.isLinux
@@ -45,15 +49,17 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gst-plugins-base";
-  version = "1.22.7";
+  version = "1.24.7";
 
   outputs = [ "out" "dev" ];
+
+  separateDebugInfo = true;
 
   src = let
     inherit (finalAttrs) pname version;
   in fetchurl {
     url = "https://gstreamer.freedesktop.org/src/${pname}/${pname}-${version}.tar.xz";
-    hash = "sha256-YlGeDY+Wnr9iqaeZby0j792jMCF6Y19KMsC/HHFXdGg=";
+    hash = "sha256-FSjRdGo5Mpn1rBfr8ToypmAgLx4p0KhSoiUPagWaL9o=";
   };
 
   strictDeps = true;
@@ -69,11 +75,12 @@ stdenv.mkDerivation (finalAttrs: {
     orc
     glib
     gstreamer
+  ] ++ lib.optionals withIntrospection [
     gobject-introspection
   ] ++ lib.optionals enableDocumentation [
     hotdoc
   ] ++ lib.optionals enableWayland [
-    wayland
+    wayland-scanner
   ];
 
   buildInputs = [
@@ -88,6 +95,7 @@ stdenv.mkDerivation (finalAttrs: {
     tremor
     pango
   ] ++ lib.optionals (!stdenv.isDarwin) [
+    libdrm
     libGL
     libvisual
   ] ++ lib.optionals stdenv.isDarwin [
@@ -106,12 +114,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [
     gstreamer
+  ] ++ lib.optionals (!stdenv.isDarwin) [
+    libdrm
   ];
 
   mesonFlags = [
     "-Dexamples=disabled" # requires many dependencies and probably not useful for our users
     # See https://github.com/GStreamer/gst-plugins-base/blob/d64a4b7a69c3462851ff4dcfa97cc6f94cd64aef/meson_options.txt#L15 for a list of choices
     "-Dgl_winsys=${lib.concatStringsSep "," (lib.optional enableX11 "x11" ++ lib.optional enableWayland "wayland" ++ lib.optional enableCocoa "cocoa")}"
+    (lib.mesonEnable "introspection" withIntrospection)
     (lib.mesonEnable "doc" enableDocumentation)
   ] ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
     "-Dtests=disabled"
@@ -122,6 +133,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!enableAlsa) "-Dalsa=disabled"
   ++ lib.optional (!enableCdparanoia) "-Dcdparanoia=disabled"
   ++ lib.optionals stdenv.isDarwin [
+    "-Ddrm=disabled"
     "-Dlibvisual=disabled"
   ];
 
@@ -167,6 +179,6 @@ stdenv.mkDerivation (finalAttrs: {
       "gstreamer-video-1.0"
     ];
     platforms = platforms.unix;
-    maintainers = with maintainers; [ matthewbauer lilyinstarlight ];
+    maintainers = with maintainers; [ matthewbauer ];
   };
 })
