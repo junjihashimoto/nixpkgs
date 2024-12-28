@@ -3048,4 +3048,23 @@ self: super: {
     "--extra-include-dirs=${lib.getDev pkgs.opencascade-occt}/include/opencascade"
   ] super.opencascade-hs;
 
+  hasktorch = overrideCabal (drv: {
+    version = "0.2.1.1";
+    sha256 = "1gw7j5mr26m03s8gcz488qplqcsvsr1dicvaqsmp6wi9rrgnd9r4";
+  }) super.hasktorch;
+
+  libtorch-ffi =
+    let libtorch-ffi-with-dirs = appendConfigureFlags ([
+          "--extra-include-dirs=${lib.getDev pkgs.libtorch-bin}/include/torch/csrc/api/include"
+        ] ++ (lib.optionals pkgs.config.cudaSupport [ "-f" "cuda" ])
+        ) (super.libtorch-ffi.override ({
+          c10 = pkgs.libtorch-bin;
+          torch = pkgs.libtorch-bin;
+          torch_cpu = pkgs.libtorch-bin;
+        }));
+    in overrideCabal (drv: {
+      version = "2.0.1.1";
+      sha256 = "0m6gg0z6dc67rxijqycyza197365xf1p71s74a8p4pkc2m2yl6p3";
+    }) libtorch-ffi-with-dirs;
+
 } // import ./configuration-tensorflow.nix {inherit pkgs haskellLib;} self super
