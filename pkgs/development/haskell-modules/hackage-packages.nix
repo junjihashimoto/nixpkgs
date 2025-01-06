@@ -145960,8 +145960,8 @@ self: {
      }:
      mkDerivation {
        pname = "hasktorch";
-       version = "0.2.0.1";
-       sha256 = "0clwhcy72v3p4y4bv4wr6688f5mzxzhxh941j8i3km0x40cyynvw";
+       version = "0.2.1.1";
+       sha256 = "sha256-JKdmX84pcnOrxmqz2ELWWzNML0aIfPaQHqAakWuRh78=";
        setupHaskellDepends = [ base Cabal cabal-doctest ];
        libraryHaskellDepends = [
          array async base bytestring cassava constraints containers
@@ -195789,8 +195789,8 @@ self: {
      }:
      mkDerivation {
        pname = "libtorch-ffi";
-       version = "2.0.0.1";
-       sha256 = "1qnfiz03w9gsw2v4c6w4rsy44823salnvgkqp67b51ga44ihwv0q";
+       version = "2.0.1.1";
+       sha256 = "sha256-4xrqRRVsXnKRIkeHc4PrxYyTgvqeeSxjz8ewZj54z1Q=";
        libraryHaskellDepends = [
          async base bytestring containers inline-c inline-c-cpp
          libtorch-ffi-helper optparse-applicative safe-exceptions sysinfo
@@ -195801,7 +195801,6 @@ self: {
        description = "Haskell bindings for PyTorch";
        license = lib.licenses.bsd3;
        hydraPlatforms = lib.platforms.none;
-       broken = true;
      }) {c10 = null; torch = null; torch_cpu = null;};
 
   "libtorch-ffi-helper" = callPackage
